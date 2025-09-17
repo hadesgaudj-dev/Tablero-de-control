@@ -5,6 +5,9 @@ import plotly.express as px
 url = 'https://github.com/juliandariogiraldoocampo/ia_taltech/raw/refs/heads/main/fiscalia/datos_generales_ficticios.csv'
 df = pd.read_csv(url, sep=';', encoding='utf-8')
 
+url_mapa = "https://github.com/juliandariogiraldoocampo/ia_taltech/raw/refs/heads/main/fiscalia/datos_mapa.csv"
+df_mapa = pd.read_csv(url_mapa)
+
 # Crear lista de las Columnas de Interés
 seleccion_columnas = ['FECHA_HECHOS','DELITO', 'ETAPA', 'FISCAL_ASIGNADO', 'DEPARTAMENTO', 'MUNICIPIO_HECHOS']
 # Actualizo el dataframe -df- con las columnas de interés, ordenadas por fecha y reseteo el índice
@@ -43,8 +46,27 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.image('img\PORTADA.svg', use_container_width=True)
+st.image('img\PORTADA NUEVA\Diapositiva1.JPG', use_container_width=True)
 # st.markdown("# <font color = #3B668C> Dashboard de Delitos - Fiscalía | Bootcamp </font>", unsafe_allow_html=True)
+
+# MAPA
+fig = px.scatter_map(
+    df_mapa,
+    lat="Lat",
+    lon="Long",
+    color="CATEGORIA",
+    color_discrete_sequence=px.colors.qualitative.Antique,
+	# color_discrete_sequence=px.colors.sequential.Viridis,
+	hover_name="NOMBRE",
+	size_max=25,
+	height=700,
+    zoom=12,
+	# map_style="open-street-map"
+	map_style="carto-darkmatter"
+	# map_style="carto-positron"
+)
+st.plotly_chart(fig)
+
 
 # Gráfico de barras apiladas por departamento y tipo de delito
 st.subheader("Delitos por Departamentos")
@@ -83,76 +105,71 @@ with col2:
 with col3:
 	## Tarjeta 3 - Etapa mas recurrente
 	st.markdown(f"""<h3 style=
-				'color:#F2A88D;
-				background-color:#FFF6F5;
-				border: 2px solid #F2A88D;
+				'color:#A6886D;
+				background-color:#F7EBD6;
+				border: 2px solid #A6886D;
 				border-radius: 10px; padding: 10px;
 				text-align: center'>
 				Etapa mas recurrente<br>{etapa_mas_frecuente} </h3><br>""",
 				unsafe_allow_html=True
 	)
+
 with col4:
-	## Tarjeta 3 - Etapa mas recurrente
+	## Tarjeta 4 - Cantidad de registros de la etapa mas recurrente
 	st.markdown(f"""<h3 style=
-				'color:#F2A88D;
-				background-color:#FFF6F5;
-				border: 2px solid #F2A88D;
+				'color:#A6886D;
+				background-color:#F7EBD6;
+				border: 2px solid #A6886D;
 				border-radius: 10px; padding: 10px;
 				text-align: center'>
-				procesos en esta etapa<br>{cant_etapa_mas_frecuente} </h3><br>""",
+				Procesos en esta Etapa<br>{cant_etapa_mas_frecuente} </h3><br>""",
 				unsafe_allow_html=True
 	)
 
-#col5, col6 = st.columns(2)
 
-#with col5:
+col5, col6 = st.columns(2)
+
+with col5:
+	st.subheader('Tipo delitos')
+	tipo_delitos = df['DELITO'].value_counts()
+	st.bar_chart(tipo_delitos)
+
+with col6:
+	st.subheader("Distribución por Departamentos")
+	departamento = df['DEPARTAMENTO'].value_counts()
+	fig = px.pie(
+		names=departamento.index,  # Para los nombres de la Torta
+		values=departamento.values # Para los valores de la Torta
+	)
+	fig.update_traces(textposition='outside', textinfo='percent+label')
+	fig.update_layout(showlegend=False, height=350)
+	st.plotly_chart(fig, key="torta_departamentos")
 
 
-st.subheader('Comportamiento Delitos')
-delitos = df['DELITO'].value_counts()
-st.bar_chart(delitos)
+# Selección de dato para visualizar
+cols_grafico = ['DELITO', 'ETAPA', 'FISCAL_ASIGNADO', 'DEPARTAMENTO', 'MUNICIPIO_HECHOS']
+df_grafico = df[cols_grafico]
 
-st.subheader('Departamentos con mas Casos')
-departamento = df['DEPARTAMENTO'].value_counts()
-st.bar_chart(departamento)
-
-st.subheader("Distribución por Departamentos")
-fig = px.pie(
-	names=departamento.index,  # Para los nombres de la Torta
-	values=departamento.values # Para los valores de la Torta
+st.subheader("Seleccione Dato a Visualizar")
+variable = st.selectbox(
+	'Seleccione la variable para el análisis:',
+	options = df_grafico.columns
 )
-fig.update_traces(textposition='outside', textinfo='percent+label')
-fig.update_layout(showlegend=False, height=450)
-st.plotly_chart(fig, key="torta_departamentos")
 
-
-
-st.dataframe(df)
-
-#st.subheader('tipo delitos')
+# st.subheader('Tipo delitos')
 grafico = df_grafico[variable].value_counts()
 st.bar_chart(grafico)
 
-if st.checkbox('mostrar Matriz de Datos'):
+if st.checkbox('Mostrar Matriz de Datos'):
 	st.subheader('Matriz de Datos')
 	st.dataframe(df_grafico)
 
-# seleccion de dato para visualizar
-#cols_grafico = ['FECHA_HECHOS','DELITO', 'ETAPA', 'FISCAL_ASIGNADO', 'DEPARTAMENTO', 'MUNICIPIO_HECHOS']
-#df_grafico = df[cols_grafico]
-
-st.header("Consulta por Fiscal Asignado")
+# Consulta por Fiscal Asignado
+st.header('Consulta por Fiscal Asignado')
 fiscal_consulta = st.selectbox(
-	'Seleccione el Fiscal a consultar',
+	'Seleccione El Fiscal a Consultar:',
 	options = df['FISCAL_ASIGNADO'].unique()
 )
 
 df_fiscal = df[df['FISCAL_ASIGNADO'] == fiscal_consulta]
 st.dataframe(df_fiscal)
-
-
-
-
-#leer datos
-
-
