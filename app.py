@@ -1,6 +1,11 @@
 import pandas as pd
 import streamlit as st
 import plotly.express as px
+from datetime import datetime
+from dotenv import load_dotenv
+import os
+load_dotenv()
+ 
 
 url = 'https://github.com/juliandariogiraldoocampo/ia_taltech/raw/refs/heads/main/fiscalia/datos_generales_ficticios.csv'
 df = pd.read_csv(url, sep=';', encoding='utf-8')
